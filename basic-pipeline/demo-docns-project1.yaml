@@ -1,0 +1,74 @@
+trigger:
+  branches:
+    include:
+      - main  # Trigger pipeline on changes to the main branch
+
+pool:
+  name: self-hosted-agent
+
+stages:
+# Stage 1: Install, Build, and Test
+- stage: Build
+  displayName: Build and Test
+  jobs:
+  - job: BuildAndTest
+    displayName: Build and Test Job
+    steps:
+    - script: echo Hello Friends, Welcome  DevOps CnS Channel. This is build job!
+      displayName: 'Run a one-line script from build job'
+    
+    - script: |
+        echo "This is Demo project1"
+        echo "You are learning how to create pipeline in Azure DevOps"
+      displayName: 'Run a Multi-line script variable Demo from build job'
+
+# Stage 2: Deploy to Azure
+- stage: QADeploy
+  displayName: Deploy to QA
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: DeployToAzure
+    displayName: Deploy to Azure App Service
+    pool:
+      name: self-hosted-agent
+    steps:
+    - script: |
+        echo "This is Demo project1 for deployment"
+        echo "You are learning how to create pipeline in Azure DevOps and deploy to QA environment"
+      displayName: 'Run a Multi-line script variable Demo from QA Deployment job'
+
+
+# Stage 3: Deploy to Azure to Stage 
+- stage: StageDeploy
+  displayName: Deploy to Stage
+  dependsOn: QADeploy
+  condition: succeeded()
+  jobs:
+  - job: DeployToAzureStage
+    displayName: Deploy to Stage Azure App Service
+    pool:
+      name: self-hosted-agent
+    steps:
+    - script: |
+        echo "This is Demo project1 for deployment"
+        echo "You are learning how to create pipeline in Azure DevOps and deploy to Stage environment"
+      displayName: 'Run a Multi-line script variable Demo from Stage Deployment job'
+
+
+# Stage 4: Deploy to Azure to Production 
+- stage: ProdDeploy
+  displayName: Deploy to Production
+  dependsOn: StageDeploy
+  condition: succeeded()
+  jobs:
+  - job: DeployToAzureProd
+    displayName: Deploy to Production Azure App Service
+    pool:
+      name: self-hosted-agent
+    steps:
+    - script: |
+        echo "This is Demo project1 for deployment"
+        echo "You are learning how to create pipeline in Azure DevOps and deploy to Production environment"
+      displayName: 'Run a Multi-line script variable Demo from Production Deployment job'
+
