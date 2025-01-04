@@ -1,0 +1,29 @@
+resources:
+  pipelines:
+    - pipeline: second-pipeline # Name of the pipeline resource
+      source: first-pipeline  # Name of the target pipeline in Azure DevOps
+      project: DevOpsCnS  # Required only if the source pipeline is in another project
+      trigger: true  # Run target pipeline when any run of source pipeline completes
+      
+trigger:
+- none
+
+pool:
+  name: self-hosted-agent
+
+stages:
+# Stage 1: Second Pipeline
+- stage: SecondPipeline
+  displayName: Second Pipeline
+  jobs:
+  - job: SecondPipelineJob
+    displayName: Second Pipeline Job
+    steps:
+    - script: echo Hello Friends, Welcome  DevOps CnS Channel. This is Second Pipeline job!
+      displayName: 'Run a one-line script from Second Pipeline job'
+    
+    - script: |
+        echo "This is Demo Project"
+        echo "You are learning how to create sequential pipeline in Azure DevOps"
+        echo "where Second pipeline is triggered on completiong of first pipeline"
+      displayName: 'Run a Multi-line script variable Demo from Second Pipeline job'

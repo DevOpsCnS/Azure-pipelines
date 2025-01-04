@@ -1,0 +1,30 @@
+schedules:
+- cron: '* * * * *'
+  displayName: Test schedule build
+  branches:
+    include:
+    - main
+
+trigger:
+- none
+
+pool:
+  name: self-hosted-agent
+
+stages:
+# Stage 1: First Pipeline
+- stage: FirstPipeline
+  displayName: First Pipeline
+  jobs:
+  - job: FirstPipelineJob
+    displayName: First Pipeline Job
+    steps:
+    - script: echo Hello Friends, Welcome  DevOps CnS Channel. This is First Pipeline job!
+      displayName: 'Run a one-line script from build job'
+    
+    - script: |
+        echo "This is Demo Project"
+        echo "You are learning how to create sequential pipeline in Azure DevOps"
+        echo "and trigger Second pipeline from first pipeline"
+      displayName: 'Run a Multi-line script variable Demo from First Pipeline job'
+
