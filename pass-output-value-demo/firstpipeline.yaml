@@ -1,0 +1,74 @@
+trigger:
+- main
+
+pool:
+  name: 'self-hosted-agent'
+
+stages:
+- stage: FirstPipelineStage1
+  displayName: First Pipeline Stage1
+  jobs:
+  - job: GenerateValue
+    displayName: 'Generate Runtime Value'
+    steps:
+    - script: |
+        date
+        echo "##vso[task.setvariable variable=myOutputVar;isOutput=true]$(date '+%d-%m-%Y %H:%M:%S')"
+        introVariable="Welcome to DevOps CnS"
+        echo "##vso[task.setvariable variable=introVariable;isOutput=true]$introVariable"
+        sleep 60
+        date
+      name: GenerateTimestamp
+      displayName: 'Generate a timestamp value'
+
+    - script: |
+        echo "variable1=\"$(GenerateTimestamp.myOutputVar)\"" > output.txt
+        echo "variable2=\"$(GenerateTimestamp.introVariable)\"" >> output.txt
+        echo "variable3=\"$(Build.DefinitionName)\"" >> output.txt
+        echo "variable4=\"$(Build.BuildId)\"" >> output.txt
+      displayName: "Generate Variable"
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: 'output.txt'
+        artifact: 'sharedArtifact'
+      displayName: "Publish Variable as Artifact"
+
+    - script: |
+        echo output used in another task $(GenerateTimestamp.myOutputVar)
+        echo Introduction message is $(GenerateTimestamp.introVariable)
+      name: secondstep
+      displayName: 'second step'
+
+
+  - job: UseValueInAnotherJob
+    dependsOn: GenerateValue
+    displayName: 'Use Generated Value in Another Job'
+    variables:
+      myTimestamp: $[ dependencies.GenerateValue.outputs['GenerateTimestamp.myOutputVar'] ]
+      introVariable: $[ dependencies.GenerateValue.outputs['GenerateTimestamp.introVariable'] ]
+    steps:
+    - script: |
+        echo "Using timestamp: $(myTimestamp)"
+        echo "Introduction message is $(introVariable)"
+      displayName: 'Print timestamp'
+
+- stage: FirstPipelineStage2
+  displayName: FirstPipelineStage2
+  dependsOn: FirstPipelineStage1
+  jobs:
+  - job: UseValueInAnotherStage
+    displayName: 'Use Generated Value in Another Stage'
+    variables:
+      myTimestamp: $[ stageDependencies.FirstPipelineStage1.GenerateValue.outputs['GenerateTimestamp.myOutputVar'] ]
+      introVariable: $[ stageDependencies.FirstPipelineStage1.GenerateValue.outputs['GenerateTimestamp.introVariable'] ]
+    steps:
+    - script: |
+        echo "Using timestamp in another stage: $(myTimestamp)"
+        echo "Introduction message is $(introVariable)"
+      displayName: 'Print timestamp in another stage'
+      
+
+
+
+

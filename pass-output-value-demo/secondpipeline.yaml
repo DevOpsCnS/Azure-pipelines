@@ -1,0 +1,37 @@
+resources:
+  pipelines:
+    - pipeline: output-value-demo-pl2 # Name of the pipeline resource
+      source: output-value-demo-pl1  # Name of the target pipeline in Azure DevOps
+      project: DevOpsCnS  # Required only if the source pipeline is in another project
+      trigger: true  # Run target pipeline when any run of source pipeline completes
+      
+trigger:
+- none
+
+pool:
+  name: self-hosted-agent
+
+stages:
+# Stage 1: Second Pipeline
+- stage: SecondPipeline
+  displayName: Second Pipeline
+  jobs:
+  - job: SecondPipelineJob
+    displayName: 'Use Generated Value in Another pipeline Stage'
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: 'DevOpsCnS'
+        pipeline: '$(resources.pipeline.output-value-demo-pl2.pipelineId)'
+        artifact: 'sharedArtifact'
+        path: '$(Pipeline.Workspace)'
+      displayName: "Download Artifact"
+
+    - script: |
+        source $(Pipeline.Workspace)/output.txt
+        echo "Using timestamp in another stage: $variable1"
+        echo "Welcome Introduction message: $variable2"
+        echo "Main pipeline name is : $variable3"
+        echo "Build number of CI pipeline is: $variable4"
+      displayName: 'Print timestamp in another stage'
